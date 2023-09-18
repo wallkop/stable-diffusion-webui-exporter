@@ -130,18 +130,17 @@ class getParamsPlugin(scripts.Script):
             with gr.Accordion("模型参数管理", open=False):
                 export_button = gr.Button(value="导出参数", variant='primary')
                 upload_button = gr.UploadButton("上传参数")
-                download_file = gr.outputs.File(label="模型参数文件下载")
-                download_json_button = gr.Interface(
-                    fn=download_json,
+                download_file = gr.outputs.File(label="模型参数文件下载", fn=download_json,
                     inputs=[],
-                    outputs=gr.outputs.File(label="Download A.txt")
-                )
+                    outputs=gr.outputs.File(label="Download A.txt"))
+                download_button = gr.Button(value="下载JSON", variant='primary')
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
+            download_button.click(fn=download_json, inputs=[], outputs=download_file)
 
-        return [download_file, export_button, upload_button, download_json_button]
+        return [download_file, export_button, upload_button, download_button]
 
 
     def after_component(self, component, **kwargs):
