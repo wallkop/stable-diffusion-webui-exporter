@@ -111,8 +111,6 @@ class getParamsPlugin(scripts.Script):
 
     exec_params = ""
 
-    download_file_compent = None
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -138,7 +136,6 @@ class getParamsPlugin(scripts.Script):
                     inputs=[],
                     outputs=gr.outputs.File(label="Download A.txt")
                 )
-                self.download_file_compent = download_file
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
@@ -234,5 +231,4 @@ class getParamsPlugin(scripts.Script):
         with open(filename, "w") as file:
             file.write(json_str)
 
-        if self.download_file_compent is not None:
-            self.download_file_compent = file
+        print(file)
