@@ -128,10 +128,12 @@ class getParamsPlugin(scripts.Script):
 
         with gr.Group():
             with gr.Accordion("模型参数管理", open=False):
-                export_button = gr.Button(value="导出参数", variant='primary')
-                upload_button = gr.UploadButton("上传参数")
-                download_file = gr.outputs.File(label="模型参数文件下载")
-                download_button = gr.Button(value="下载JSON", variant='primary')
+                with gr.Column():
+                    with gr.Row():
+                        upload_button = gr.UploadButton(value="上传UI参数")
+                        export_button = gr.Button(value="下载UI参数")
+                        download_button = gr.Button(value="下载模板JSON", variant='primary')
+                    download_file = gr.outputs.File(label="模型参数文件下载")
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
