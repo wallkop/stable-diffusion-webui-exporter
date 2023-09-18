@@ -6,7 +6,9 @@ from PIL import Image
 import gradio as gr
 import pickle
 from modules import scripts
+from modules.api import api
 import gzip
+import math
 
 TYPE_IMAGE = "Image"
 TYPE_STR = "str"
@@ -130,11 +132,83 @@ class getParamsPlugin(scripts.Script):
 
         return [download_file, export_button, upload_button]
 
+
     def after_component(self, component, **kwargs):
         self.args_params[component._id] = component
 
+
     def postprocess(self, p, processed, *args):
+
         if len(processed.info) == 0:
             return p
-        print('----------------custom extension postprocess')
-        print(p)
+
+        allProcessKeys = p.__dict__.keys()
+        execParam = {
+            "script_args": [""],
+            "alwayson_scripts": {},
+        }
+        for key in allProcessKeys:
+            value = p.__dict__[key]
+            if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(value, str):
+                execParam[key] = value
+            elif key == 'init_images':
+                init_images = []
+                for image in value:
+                    init_images.append(api.encode_pil_to_base64(image).decode('utf-8'))
+                execParam[key] = init_images
+
+        for script in p.scripts.scripts:
+            scriptTitle = script.title()
+            scriptArgs = p.script_args[script.args_from:script.args_to]
+            if scriptTitle == 'ControlNet':
+                execParam['alwayson_scripts']['controlnet'] = {
+                    "args": []
+                }
+                for scriptArg in scriptArgs:
+                    try:
+                        if not scriptArg.__dict__['enabled']:
+                            continue
+                        controlnetParams = {
+                            # "mask": None,
+                            # "module": scriptArg.module,
+                            # "model": scriptArg.model,
+                            # "weight": scriptArg.weight,
+                            # "resize_mode": scriptArg.resize_mode,
+                            # "control_mode": scriptArg.control_mode,
+                            # "pixel_perfect": scriptArg.pixel_perfect,
+                            # "guidance_start": scriptArg.guidance_start,
+                            # "guidance_end": scriptArg.guidance_end,
+                            # "threshold_a": scriptArg.threshold_a,
+                            # "threshold_b": scriptArg.threshold_b,
+                            # "processor_res": scriptArg.processor_res,
+                            # "lowvram": scriptArg.low_vram,  # 有疑问
+                        }
+
+                        allControlnetKeys = scriptArg.__dict__.keys()
+                        for key in allControlnetKeys:
+                            value = scriptArg.__dict__[key]
+                            if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(
+                                    value, str):
+                                controlnetParams[key] = value
+                        if scriptArg.image:
+                            controlnetParams['mask'] = None
+                            if 'image' in scriptArg.image:
+                                pil = Image.fromarray(scriptArg.image['image'])
+                                controlnetParams['input_image'] = api.encode_pil_to_base64(pil).decode('utf-8')
+                            else:
+                                controlnetParams['input_image'] = None
+
+                        execParam['alwayson_scripts']['controlnet']['args'].append(controlnetParams)
+                    except Exception as e:
+                        # 捕获所有异常
+                        print('捕获到异常:', e)
+
+            if scriptTitle == 'ADetailer' and scriptArgs[0] is True:
+                dict1 = scriptArgs[1]
+                dict1.pop('is_api')
+                execParam['alwayson_scripts']['adetailer'] = {
+                    "args": [scriptArgs[0], dict1]
+                }
+
+        # TODO
+        print(execParam)
