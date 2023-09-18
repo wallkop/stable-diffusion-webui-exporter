@@ -82,8 +82,12 @@ def export_data(*args):
     return filename
 
 
-def download_json():
-    return "exec-params.txt"
+def download_json(exporterPlugin):
+    if exporterPlugin.is_ran:
+        return "exec-params.txt"
+    else:
+        exporterPlugin.is_ran = False
+        gr.Warning("请先运行再进行下载")
 
 
 def import_data(upload_file):
@@ -105,11 +109,13 @@ def import_data(upload_file):
     return result
 
 
-class getParamsPlugin(scripts.Script):
+class exporterPlugin(scripts.Script):
 
     args_params = {}
 
     exec_params = ""
+
+    is_ran = False
 
     def __init__(self) -> None:
         super().__init__()
@@ -127,18 +133,18 @@ class getParamsPlugin(scripts.Script):
             args_list.append(ele)
 
         with gr.Group():
-            with gr.Accordion("[Zyb] Params Exporter", open=False):
+            with gr.Accordion("[作业帮] 参数管理工具", open=False):
                 with gr.Column():
                     with gr.Row():
-                        upload_button = gr.UploadButton("Upload UI Params")
-                        export_button = gr.Button(value="Export UI Params")
-                        download_button = gr.Button(value="Export Runtime JSON", variant='primary')
-                    download_file = gr.outputs.File(label="Params Download")
+                        upload_button = gr.UploadButton("上传UI参数")
+                        export_button = gr.Button(value="导出UI参数")
+                        download_button = gr.Button(value="导出运行参数", variant='primary')
+                    download_file = gr.outputs.File(label="参数下载")
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
-            download_button.click(fn=download_json, inputs=[], outputs=download_file)
+            download_button.click(fn=download_json, inputs=self, outputs=download_file)
 
         return [download_file, export_button, upload_button, download_button]
 
@@ -220,15 +226,9 @@ class getParamsPlugin(scripts.Script):
                     "args": [scriptArgs[0], dict1]
                 }
 
-        # TODO
-        print(execParam)
-
-        if execParam.get("init_images") is not None:
-            execParam["init_images"]
-
         json_str = json.dumps(execParam, indent=4)
         filename = "exec-params.txt"
         with open(filename, "w") as file:
             file.write(json_str)
 
-        print(file)
+        self.is_ran = True
