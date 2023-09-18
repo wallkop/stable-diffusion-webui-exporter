@@ -82,6 +82,10 @@ def export_data(*args):
     return filename
 
 
+def download_json():
+    return "exec-params.txt"
+
+
 def import_data(upload_file):
     file_path = upload_file.name
     with open(file_path, "r") as file:
@@ -129,13 +133,18 @@ class getParamsPlugin(scripts.Script):
                 export_button = gr.Button(value="导出参数", variant='primary')
                 upload_button = gr.UploadButton("上传参数")
                 download_file = gr.outputs.File(label="模型参数文件下载")
+                download_json_button = gr.Interface(
+                    fn=download_json,
+                    inputs=[],
+                    outputs=gr.outputs.File(label="Download A.txt")
+                )
                 self.download_file_compent = download_file
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
 
-        return [download_file, export_button, upload_button]
+        return [download_file, export_button, upload_button, download_json_button]
 
 
     def after_component(self, component, **kwargs):
