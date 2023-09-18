@@ -84,10 +84,10 @@ def export_data(*args):
 
 def download_json():
     if exporterPlugin.is_ran:
+        exporterPlugin.is_ran = False
         return "exec-params.txt"
     else:
-        exporterPlugin.is_ran = False
-        gr.Warning("请先运行再进行下载")
+        gr.Warning("请生成图片后, 再导出运行参数")
 
 
 def import_data(upload_file):
