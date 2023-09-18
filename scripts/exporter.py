@@ -56,7 +56,7 @@ def image_mask_to_base64(img_array):
 def export_data(*args):
     i = 0
     result = {}
-    for key in getParamsPlugin.args_params.keys():
+    for key in exporterPlugin.args_params.keys():
         if i >= len(args):
             break
         value = args[i]
@@ -82,7 +82,7 @@ def export_data(*args):
     return filename
 
 
-def download_json(exporterPlugin):
+def download_json():
     if exporterPlugin.is_ran:
         return "exec-params.txt"
     else:
@@ -144,7 +144,7 @@ class exporterPlugin(scripts.Script):
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
-            download_button.click(fn=download_json, inputs=self, outputs=download_file)
+            download_button.click(fn=download_json, inputs=[], outputs=download_file)
 
         return [download_file, export_button, upload_button, download_button]
 
