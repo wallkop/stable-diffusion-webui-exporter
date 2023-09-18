@@ -127,13 +127,13 @@ class getParamsPlugin(scripts.Script):
             args_list.append(ele)
 
         with gr.Group():
-            with gr.Accordion("模型参数管理", open=False):
+            with gr.Accordion("[Zyb] Params Exporter", open=False):
                 with gr.Column():
                     with gr.Row():
-                        upload_button = gr.UploadButton(value="上传UI参数")
-                        export_button = gr.Button(value="下载UI参数")
-                        download_button = gr.Button(value="下载模板JSON", variant='primary')
-                    download_file = gr.outputs.File(label="模型参数文件下载")
+                        upload_button = gr.UploadButton("Upload UI Params")
+                        export_button = gr.Button(value="Export UI Params")
+                        download_button = gr.Button(value="Export Runtime JSON", variant='primary')
+                    download_file = gr.outputs.File(label="Params Download")
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
@@ -162,10 +162,10 @@ class getParamsPlugin(scripts.Script):
             if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(value, str):
                 execParam[key] = value
             elif key == 'init_images':
-                init_images = []
-                for image in value:
-                    init_images.append(api.encode_pil_to_base64(image).decode('utf-8'))
-                execParam[key] = init_images
+                # init_images = []
+                # for image in value:
+                #     init_images.append(api.encode_pil_to_base64(image).decode('utf-8'))
+                execParam[key] = ["{{PPP}}"]
 
         for script in p.scripts.scripts:
             scriptTitle = script.title()
@@ -223,7 +223,8 @@ class getParamsPlugin(scripts.Script):
         # TODO
         print(execParam)
 
-        self.exec_params = execParam
+        if execParam.get("init_images") is not None:
+            execParam["init_images"]
 
         json_str = json.dumps(execParam, indent=4)
         filename = "exec-params.txt"
