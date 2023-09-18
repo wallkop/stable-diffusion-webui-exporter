@@ -105,6 +105,10 @@ class getParamsPlugin(scripts.Script):
 
     args_params = {}
 
+    exec_params = ""
+
+    download_file_compent = None
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -125,6 +129,7 @@ class getParamsPlugin(scripts.Script):
                 export_button = gr.Button(value="导出参数", variant='primary')
                 upload_button = gr.UploadButton("上传参数")
                 download_file = gr.outputs.File(label="模型参数文件下载")
+                self.download_file_compent = download_file
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
@@ -212,3 +217,13 @@ class getParamsPlugin(scripts.Script):
 
         # TODO
         print(execParam)
+
+        self.exec_params = execParam
+
+        json_str = json.dumps(execParam, indent=4)
+        filename = "exec-params.txt"
+        with open(filename, "w") as file:
+            file.write(json_str)
+
+        if self.download_file_compent is not None:
+            self.download_file_compent = file
