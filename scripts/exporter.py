@@ -93,7 +93,7 @@ def export_data(*args):
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
-        result[key] = {"v": value, "t": field_type, "o": object_type, "it": vars(item)}
+        result[key] = {"v": value, "t": field_type, "o": object_type}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
@@ -120,9 +120,8 @@ def import_data(upload_file):
             v = pickle.loads(bv)
         result.append(v)
 
-    filename = "import-ui-params.txt"
-    with open(filename, "w") as file:
-        file.write(json.dumps(result))
+    print('import-------------')
+    print(result)
 
     return result
 
