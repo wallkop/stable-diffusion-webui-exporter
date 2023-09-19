@@ -125,8 +125,7 @@ def import_data(upload_file):
         if t == TYPE_IMAGE:
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
-            # v = base64_to_image_dict(v)
-            v = None
+            v = base64_to_image_dict(v)
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
