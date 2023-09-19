@@ -78,6 +78,7 @@ def export_data(*args):
         if i >= len(args):
             break
         value = args[i]
+        item = exporterPlugin.args_params[key]
         i += 1
 
         field_type = TYPE_STR
@@ -92,7 +93,7 @@ def export_data(*args):
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
-        result[key] = {"v": value, "t": field_type, "o": object_type}
+        result[key] = {"v": value, "t": field_type, "o": object_type, "it": vars(item)}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
@@ -118,8 +119,11 @@ def import_data(upload_file):
             bv = decompress_base64(v)
             v = pickle.loads(bv)
         result.append(v)
-        #test
-        return v
+
+    filename = "import-ui-params.txt"
+    with open(filename, "w") as file:
+        file.write(json.dumps(result))
+
     return result
 
 
@@ -152,8 +156,7 @@ class exporterPlugin(scripts.Script):
 
         args_list = []
         for ele in self.args_params.values():
-            if ele._id == 142:
-                args_list.append(ele)
+            args_list.append(ele)
 
         with gr.Group():
             with gr.Accordion("[作业帮] 参数管理工具", open=False):
@@ -173,17 +176,7 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
-        # Test
-        if component._id == 142:
-            print("id------")
-            print(component._id)
-            print("component------")
-            print(component)
-            print(vars(component))
-            print("kwargs------")
-            print(kwargs)
-
-            self.args_params[component._id] = component
+        self.args_params[component._id] = component
 
 
     def postprocess(self, p, processed, *args):
