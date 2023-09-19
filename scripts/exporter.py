@@ -161,8 +161,12 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
+        print("id------")
+        print(component._id)
         print("component------")
         print(component)
+        print(vars(component))
+        print(dir(component))
         print("kwargs------")
         print(kwargs)
 
