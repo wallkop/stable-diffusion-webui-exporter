@@ -166,7 +166,6 @@ class exporterPlugin(scripts.Script):
         print("component------")
         print(component)
         print(vars(component))
-        print(dir(component))
         print("kwargs------")
         print(kwargs)
 
