@@ -78,7 +78,7 @@ def export_data(*args):
             value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
-            value = image_to_base64(value)
+            value = image_dict_to_base64(value)
             field_type = TYPE_IMAGE_DICT
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
@@ -112,7 +112,7 @@ def import_data(upload_file):
         if t == TYPE_IMAGE:
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
-            v = base64_to_image_dict(v)
+            v = base64_to_image(v)
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
