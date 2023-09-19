@@ -33,27 +33,24 @@ def decompress_base64(compressed_base64):
 
 
 def base64_to_image(base64_str):
-    # img_bytes = decompress_base64(base64_str)
-    # img_file = BytesIO(img_bytes)
-    # img = Image.open(img_file)
-    # return img
-    return api.decode_base64_to_image(base64_str)
+    img_bytes = decompress_base64(base64_str)
+    img_file = BytesIO(img_bytes)
+    img = Image.open(img_file)
+    return img
 
 
 def image_to_base64(img):
-    # buffered = BytesIO()
-    # img.save(buffered, format=format)
-    # img_str = compress_base64(buffered.getvalue())
-    # return img_str
-    pil = Image.fromarray(img)
-    return api.encode_pil_to_base64(pil).decode('utf-8')
+    buffered = BytesIO()
+    img.save(buffered, format="png")
+    img_str = compress_base64(buffered.getvalue())
+    return img_str
 
 
-# def image_mask_to_base64(img_array):
-#     image_pil = Image.fromarray(img_array['image'], "RGB")
-#     alpha_pil = Image.fromarray(img_array['mask'][:, :, 3], 'L')
-#     image_pil.putalpha(alpha_pil)
-#     return image_to_base64(image_pil)
+def image_mask_to_base64(img_array):
+    image_pil = Image.fromarray(img_array['image'], "RGB")
+    alpha_pil = Image.fromarray(img_array['mask'][:, :, 3], 'L')
+    image_pil.putalpha(alpha_pil)
+    return image_to_base64(image_pil)
 
 
 def export_data(*args):
@@ -71,7 +68,7 @@ def export_data(*args):
             value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
-            value = image_to_base64(value)
+            value = image_mask_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
@@ -229,7 +226,7 @@ class exporterPlugin(scripts.Script):
                 }
 
         json_str = json.dumps(execParam, indent=4)
-        filename = "exec-params.txt"
+        filename = "export-exec-params.txt"
         with open(filename, "w") as file:
             file.write(json_str)
 
