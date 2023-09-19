@@ -52,13 +52,20 @@ def image_dict_to_base64(img_array):
     print('image_dict_to_base64: img_array------')
     print(img_array)
     image_pil = Image.fromarray(img_array['image'])
-    return api.encode_pil_to_base64(image_pil).decode('utf-8')
+    result = api.encode_pil_to_base64(image_pil).decode('utf-8')
+    print('image_dict_to_base64: result------')
+    print(result)
+    return result
+
 
 
 def base64_to_image_dict(base64_str):
     print('base64_to_image_dict: base64_str------')
     print(base64_str)
-    return api.decode_base64_to_image(base64_str)
+    result = api.decode_base64_to_image(base64_str)
+    print('base64_to_image_dict: result------')
+    print(result)
+    return result
 
 
 def export_data(*args):
