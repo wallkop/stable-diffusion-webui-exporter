@@ -28,6 +28,7 @@ def json_serializable(obj):
 
     return result
 
+
 def compress_base64(data):
     buffer = BytesIO()
     with gzip.GzipFile(fileobj=buffer, mode='wb') as f:
@@ -61,24 +62,15 @@ def image_to_base64(img):
 
 
 def image_dict_to_base64(img_array):
-    print('image_dict_to_base64: img_array------')
-    print(img_array)
     image_pil = Image.fromarray(img_array['image'])
     result = api.encode_pil_to_base64(image_pil).decode('utf-8')
-    print('image_dict_to_base64: result------')
-    print(result)
     return result
 
 
 
 def base64_to_image_dict(base64_str):
-    print('base64_to_image_dict: base64_str------')
-    print(base64_str)
     result = api.decode_base64_to_image(base64_str)
     result = np.array(result)
-    print('base64_to_image_dict: result------')
-    print(result)
-    print(type(result))
     return result
 
 
@@ -130,9 +122,6 @@ def import_data(upload_file):
             bv = decompress_base64(v)
             v = pickle.loads(bv)
         result.append(v)
-
-    print('import-------------')
-    print(result)
 
     return result
 
