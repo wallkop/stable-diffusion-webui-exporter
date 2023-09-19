@@ -43,7 +43,7 @@ def base64_to_image(base64_str):
 
 def image_to_base64(img):
     buffered = BytesIO()
-    img.save(buffered, format="jpeg")
+    img.save(buffered, format="png")
     img_str = compress_base64(buffered.getvalue())
     return img_str
 
@@ -71,10 +71,6 @@ def export_data(*args):
             break
         value = args[i]
         i += 1
-
-        # Test2
-        if key != 142:
-            continue
 
         field_type = TYPE_STR
         object_type = str(type(value))
