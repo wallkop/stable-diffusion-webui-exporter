@@ -140,8 +140,11 @@ class exporterPlugin(scripts.Script):
     def ui(self, is_img2img):
 
         args_list = []
+        i = 0
         for ele in self.args_params.values():
+            print(i, ele)
             args_list.append(ele)
+            i += 1
 
         with gr.Group():
             with gr.Accordion("[作业帮] 参数管理工具", open=False):
