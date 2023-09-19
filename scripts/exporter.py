@@ -107,7 +107,6 @@ def export_data(*args):
         result[key] = {"v": value, "t": field_type, "o": object_type, "name": str(item), "it": json_serializable(item)}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
-    # test
     with open(filename, "w") as file:
         file.write(json_str)
     return filename
@@ -127,6 +126,7 @@ def import_data(upload_file):
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
             v = base64_to_image_dict(v)
+            v = None
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
