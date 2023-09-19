@@ -45,7 +45,8 @@ def image_to_base64(img):
     # img.save(buffered, format=format)
     # img_str = compress_base64(buffered.getvalue())
     # return img_str
-    return api.encode_pil_to_base64(img).decode('utf-8')
+    pil = Image.fromarray(img)
+    return api.encode_pil_to_base64(pil).decode('utf-8')
 
 
 def image_mask_to_base64(img_array):
