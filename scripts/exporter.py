@@ -33,17 +33,19 @@ def decompress_base64(compressed_base64):
 
 
 def base64_to_image(base64_str):
-    img_bytes = decompress_base64(base64_str)
-    img_file = BytesIO(img_bytes)
-    img = Image.open(img_file)
-    return img
+    # img_bytes = decompress_base64(base64_str)
+    # img_file = BytesIO(img_bytes)
+    # img = Image.open(img_file)
+    # return img
+    return api.decode_base64_to_image(base64_str)
 
 
-def image_to_base64(img, format="PNG") -> object:
-    buffered = BytesIO()
-    img.save(buffered, format=format)
-    img_str = compress_base64(buffered.getvalue())
-    return img_str
+def image_to_base64(img):
+    # buffered = BytesIO()
+    # img.save(buffered, format=format)
+    # img_str = compress_base64(buffered.getvalue())
+    # return img_str
+    return api.encode_pil_to_base64(img).decode('utf-8')
 
 
 def image_mask_to_base64(img_array):
@@ -75,17 +77,16 @@ def export_data(*args):
             field_type = TYPE_OBJ
         result[key] = {"v": value, "t": field_type, "o": object_type}
     json_str = json.dumps(result, indent=4)
-    filename = "export-data.txt"
+    filename = "export-ui-params.txt"
     with open(filename, "w") as file:
         file.write(json_str)
-
     return filename
 
 
 def download_json():
     if exporterPlugin.is_ran:
         exporterPlugin.is_ran = False
-        return "exec-params.txt"
+        return "export-exec-params.txt"
     else:
         gr.Warning("请生成图片后, 再导出运行参数")
 
