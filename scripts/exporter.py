@@ -9,6 +9,7 @@ from modules import scripts
 from modules.api import api
 import gzip
 import math
+import numpy as np
 
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
@@ -63,6 +64,7 @@ def base64_to_image_dict(base64_str):
     print('base64_to_image_dict: base64_str------')
     print(base64_str)
     result = api.decode_base64_to_image(base64_str)
+    result = np.asarray(result)
     print('base64_to_image_dict: result------')
     print(result)
     return result
