@@ -9,8 +9,10 @@ from modules import scripts
 from modules.api import api
 import gzip
 import math
+import numpy as np
 
 TYPE_IMAGE = "Image"
+TYPE_IMAGE_DICT = "ImageDict"
 TYPE_STR = "str"
 TYPE_OBJ = "object"
 
@@ -46,12 +48,19 @@ def image_to_base64(img):
     return img_str
 
 
-def image_mask_to_base64(img_array):
+def image_dict_to_base64(img_array):
     image_pil = Image.fromarray(img_array['image'], "RGB")
     # alpha_pil = Image.fromarray(img_array['image'], "RGB")
     # image_pil.putalpha(alpha_pil)
     return image_to_base64(image_pil)
 
+
+def base64_to_image_dict(base64_str):
+    img_bytes = decompress_base64(base64_str)
+    img_file = BytesIO(img_bytes)
+    img = Image.open(img_file)
+    result = {"image": np.asarray(img)}
+    return result
 
 def export_data(*args):
     i = 0
@@ -68,8 +77,8 @@ def export_data(*args):
             value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
-            value = image_mask_to_base64(value)
-            field_type = TYPE_IMAGE
+            value = image_dict_to_base64(value)
+            field_type = TYPE_IMAGE_DICT
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
@@ -101,6 +110,8 @@ def import_data(upload_file):
         t = value["t"]
         if t == TYPE_IMAGE:
             v = base64_to_image(v)
+        elif t == TYPE_IMAGE_DICT:
+            v = base64_to_image_dict(v)
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
