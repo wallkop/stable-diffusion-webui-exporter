@@ -71,6 +71,11 @@ def export_data(*args):
             break
         value = args[i]
         i += 1
+
+        # Test
+        if key != 142:
+            continue
+
         field_type = TYPE_STR
         object_type = str(type(value))
 
@@ -140,11 +145,9 @@ class exporterPlugin(scripts.Script):
     def ui(self, is_img2img):
 
         args_list = []
-        i = 0
         for ele in self.args_params.values():
-            print(i, ele, ele._id)
-            args_list.append(ele)
-            i += 1
+            if ele._id == 142:
+                args_list.append(ele)
 
         with gr.Group():
             with gr.Accordion("[作业帮] 参数管理工具", open=False):
