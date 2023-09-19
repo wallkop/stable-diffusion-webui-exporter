@@ -233,4 +233,4 @@ class exporterPlugin(scripts.Script):
         with open(filename, "w") as file:
             file.write(json_str)
 
-        self.is_ran = True
+        exporterPlugin.is_ran = True
