@@ -49,11 +49,11 @@ def image_to_base64(img):
     return api.encode_pil_to_base64(pil).decode('utf-8')
 
 
-def image_mask_to_base64(img_array):
-    image_pil = Image.fromarray(img_array['image'], "RGB")
-    alpha_pil = Image.fromarray(img_array['mask'][:, :, 3], 'L')
-    image_pil.putalpha(alpha_pil)
-    return image_to_base64(image_pil)
+# def image_mask_to_base64(img_array):
+#     image_pil = Image.fromarray(img_array['image'], "RGB")
+#     alpha_pil = Image.fromarray(img_array['mask'][:, :, 3], 'L')
+#     image_pil.putalpha(alpha_pil)
+#     return image_to_base64(image_pil)
 
 
 def export_data(*args):
@@ -71,7 +71,7 @@ def export_data(*args):
             value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
-            value = image_mask_to_base64(value)
+            value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
