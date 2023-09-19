@@ -142,7 +142,7 @@ class exporterPlugin(scripts.Script):
         args_list = []
         i = 0
         for ele in self.args_params.values():
-            print(i, ele)
+            print(i, ele, ele._id)
             args_list.append(ele)
             i += 1
 
