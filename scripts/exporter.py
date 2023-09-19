@@ -9,7 +9,6 @@ from modules import scripts
 from modules.api import api
 import gzip
 import math
-import numpy as np
 
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
@@ -36,6 +35,7 @@ def decompress_base64(compressed_base64):
 
 def base64_to_image(base64_str):
     img_bytes = decompress_base64(base64_str)
+    api.decode_base64_to_image(img_bytes)
     img_file = BytesIO(img_bytes)
     img = Image.open(img_file)
     return img
@@ -49,18 +49,16 @@ def image_to_base64(img):
 
 
 def image_dict_to_base64(img_array):
-    image_pil = Image.fromarray(img_array['image'], "RGB")
-    # alpha_pil = Image.fromarray(img_array['image'], "RGB")
-    # image_pil.putalpha(alpha_pil)
-    return image_to_base64(image_pil)
+    print('image_dict_to_base64: img_array------')
+    print(img_array)
+    image_pil = Image.fromarray(img_array['image'])
+    return api.encode_pil_to_base64(image_pil).decode('utf-8')
 
 
 def base64_to_image_dict(base64_str):
-    img_bytes = decompress_base64(base64_str)
-    img_file = BytesIO(img_bytes)
-    img = Image.open(img_file)
-    result = {"image": np.asarray(img)}
-    return result
+    print('base64_to_image_dict: base64_str------')
+    print(base64_str)
+    return api.decode_base64_to_image(base64_str)
 
 
 def export_data(*args):
@@ -92,14 +90,6 @@ def export_data(*args):
     return filename
 
 
-def download_json():
-    if exporterPlugin.is_ran:
-        exporterPlugin.is_ran = False
-        return "export-exec-params.txt"
-    else:
-        gr.Warning("请生成图片后, 再导出运行参数")
-
-
 def import_data(upload_file):
     file_path = upload_file.name
     with open(file_path, "r") as file:
@@ -113,13 +103,20 @@ def import_data(upload_file):
         if t == TYPE_IMAGE:
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
-            v = base64_to_image(v)
-            print(v)
+            v = base64_to_image_dict(v)
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
         result.append(v)
     return result
+
+
+def download_json():
+    if exporterPlugin.is_ran:
+        exporterPlugin.is_ran = False
+        return "export-exec-params.txt"
+    else:
+        gr.Warning("请生成图片后, 再导出运行参数")
 
 
 class exporterPlugin(scripts.Script):
