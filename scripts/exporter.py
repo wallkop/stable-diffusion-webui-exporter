@@ -104,7 +104,7 @@ def export_data(*args):
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
-        result[key] = {"v": value, "t": field_type, "o": object_type, "it": json_serializable(item)}
+        result[key] = {"v": value, "t": field_type, "o": object_type, "name": item, "it": json_serializable(item)}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
