@@ -17,6 +17,17 @@ TYPE_STR = "str"
 TYPE_OBJ = "object"
 
 
+def json_serializable(obj):
+    result = {}
+    for key, value in vars(obj).items():
+        try:
+            json.dumps({key: value})
+            result[key] = value
+        except TypeError:
+            result[key] = str(value)
+
+    return result
+
 def compress_base64(data):
     buffer = BytesIO()
     with gzip.GzipFile(fileobj=buffer, mode='wb') as f:
@@ -93,7 +104,7 @@ def export_data(*args):
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
-        result[key] = {"v": value, "t": field_type, "o": object_type}
+        result[key] = {"v": value, "t": field_type, "o": object_type, "it": json_serializable(item)}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
