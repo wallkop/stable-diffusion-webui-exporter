@@ -43,7 +43,7 @@ def base64_to_image(base64_str):
 
 def image_to_base64(img):
     buffered = BytesIO()
-    img.save(buffered, format="png")
+    img.save(buffered, format="jpeg")
     img_str = compress_base64(buffered.getvalue())
     return img_str
 
@@ -62,6 +62,7 @@ def base64_to_image_dict(base64_str):
     result = {"image": np.asarray(img)}
     return result
 
+
 def export_data(*args):
     i = 0
     result = {}
@@ -77,7 +78,7 @@ def export_data(*args):
             value = image_to_base64(value)
             field_type = TYPE_IMAGE
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
-            value = image_dict_to_base64(value)
+            value = image_to_base64(value)
             field_type = TYPE_IMAGE_DICT
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
