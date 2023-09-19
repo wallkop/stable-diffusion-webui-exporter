@@ -118,6 +118,8 @@ def import_data(upload_file):
             bv = decompress_base64(v)
             v = pickle.loads(bv)
         result.append(v)
+        #test
+        return v
     return result
 
 
