@@ -161,6 +161,7 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
+        # Test
         if component._id == 142:
             print("id------")
             print(component._id)
