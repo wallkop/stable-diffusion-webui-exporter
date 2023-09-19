@@ -170,7 +170,7 @@ class exporterPlugin(scripts.Script):
             print("kwargs------")
             print(kwargs)
 
-        self.args_params[component._id] = component
+            self.args_params[component._id] = component
 
 
     def postprocess(self, p, processed, *args):
