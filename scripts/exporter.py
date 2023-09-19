@@ -64,9 +64,10 @@ def base64_to_image_dict(base64_str):
     print('base64_to_image_dict: base64_str------')
     print(base64_str)
     result = api.decode_base64_to_image(base64_str)
-    result = np.asarray(result)
+    result = np.array(result)
     print('base64_to_image_dict: result------')
     print(result)
+    print(type(result))
     return result
 
 
