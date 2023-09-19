@@ -161,6 +161,11 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
+        print("component------")
+        print(component)
+        print("kwargs------")
+        print(kwargs)
+
         self.args_params[component._id] = component
 
 
