@@ -48,8 +48,8 @@ def image_to_base64(img):
 
 def image_mask_to_base64(img_array):
     image_pil = Image.fromarray(img_array['image'], "RGB")
-    alpha_pil = Image.fromarray(img_array['mask'][:, :, 3], 'L')
-    image_pil.putalpha(alpha_pil)
+    # alpha_pil = Image.fromarray(img_array['image'], "RGB")
+    # image_pil.putalpha(alpha_pil)
     return image_to_base64(image_pil)
 
 
