@@ -49,7 +49,7 @@ def decompress_base64(compressed_base64):
 
 def base64_to_image(base64_str):
     img_bytes = decompress_base64(base64_str)
-    api.decode_base64_to_image(img_bytes)
+    # api.decode_base64_to_image(img_bytes)
     img_file = BytesIO(img_bytes)
     img = Image.open(img_file)
     return img
