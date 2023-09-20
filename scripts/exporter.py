@@ -88,7 +88,7 @@ def export_data(*args):
 
         # prepare
         if item_name == "dropdown" and isinstance(value, int):
-            value = item["choices"][value]
+            value = item.choices[value]
 
         field_type = TYPE_STR
         object_type = str(type(value))
