@@ -38,6 +38,7 @@ def compress_base64(data):
     return compressed_base64
 
 
+
 def decompress_base64(compressed_base64):
     compressed_data = base64.b64decode(compressed_base64)
     buffer = BytesIO(compressed_data)
@@ -82,7 +83,12 @@ def export_data(*args):
             break
         value = args[i]
         item = exporterPlugin.args_params[key]
+        item_name = str(item)
         i += 1
+
+        # prepare
+        if item_name == "dropdown" and isinstance(value, int):
+            value = item["choices"][value]
 
         field_type = TYPE_STR
         object_type = str(type(value))
@@ -96,7 +102,8 @@ def export_data(*args):
         elif "<class 'str'>" != object_type:
             value = compress_base64(pickle.dumps(value))
             field_type = TYPE_OBJ
-        result[key] = {"v": value, "t": field_type, "o": object_type, "name": str(item), "it": json_serializable(item)}
+
+        result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name, "it": json_serializable(item)}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
@@ -257,3 +264,6 @@ class exporterPlugin(scripts.Script):
             file.write(json_str)
 
         exporterPlugin.is_ran = True
+
+
+
