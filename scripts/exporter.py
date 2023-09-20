@@ -14,6 +14,7 @@ import numpy as np
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
 TYPE_STR = "str"
+TYPE_INT = "int"
 TYPE_OBJ = "object"
 
 
@@ -49,7 +50,6 @@ def decompress_base64(compressed_base64):
 
 def base64_to_image(base64_str):
     img_bytes = decompress_base64(base64_str)
-    # api.decode_base64_to_image(img_bytes)
     img_file = BytesIO(img_bytes)
     img = Image.open(img_file)
     return img
@@ -99,6 +99,8 @@ def export_data(*args):
         elif "<class 'dict'>" == object_type and "image" in value and "mask" in value:
             value = image_dict_to_base64(value)
             field_type = TYPE_IMAGE_DICT
+        elif "<class 'int'>" == object_type:
+            object_type = TYPE_INT
         elif "<class 'str'>" != object_type:
             try:
                 value = compress_base64(pickle.dumps(value))
@@ -133,6 +135,8 @@ def import_data(upload_file):
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
             v = base64_to_image_dict(v)
+        elif t == TYPE_INT:
+            pass
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
