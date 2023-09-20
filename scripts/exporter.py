@@ -100,10 +100,18 @@ def export_data(*args):
             value = image_dict_to_base64(value)
             field_type = TYPE_IMAGE_DICT
         elif "<class 'str'>" != object_type:
-            value = compress_base64(pickle.dumps(value))
+            try:
+                value = compress_base64(pickle.dumps(value))
+            except:
+                print("ERROR---value:")
+                print(value)
+                print("ERROR---item_name:")
+                print(str(item_name))
+                value = "H4sIAJ6sCmUC/2tg8dMDAL+uOHkEAAAA"
             field_type = TYPE_OBJ
 
-        result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name, "it": json_serializable(item)}
+        #result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name, "it": json_serializable(item)}
+        result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.txt"
     with open(filename, "w") as file:
