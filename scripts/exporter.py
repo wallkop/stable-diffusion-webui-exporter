@@ -10,6 +10,7 @@ from modules.api import api
 import gzip
 import math
 import numpy as np
+import tempfile
 
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
@@ -204,9 +205,13 @@ class exporterPlugin(scripts.Script):
 
 
     def before_process(self, p, *args):
-        # clear download_file
-        if self.download_file_obj is not None:
-            self.download_file_obj.value = None
+        index = 0
+        for v in p.__dict__["script_args"]:
+            if isinstance(v, tempfile._TemporaryFileWrapper):
+                p.__dict__["script_args"][index] = None
+                print(">>> Set p.__dict__[\"script_args\"][%s] = None" % index)
+            index += 1
+
 
     def postprocess(self, p, processed, *args):
 
@@ -230,7 +235,7 @@ class exporterPlugin(scripts.Script):
 
         for script in p.scripts.scripts:
             scriptTitle = script.title()
-            scriptArgs = p.script_args[script.args_from:script.args_to]
+            scriptArgs = p.script_args[script.args_from : script.args_to]
             if scriptTitle == 'ControlNet':
                 execParam['alwayson_scripts']['controlnet'] = {
                     "args": []
