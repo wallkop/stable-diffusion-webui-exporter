@@ -204,6 +204,7 @@ class exporterPlugin(scripts.Script):
 
 
     def before_process(self, p, *args):
+        # clear download_file
         if self.download_file_obj is not None:
             self.download_file_obj.value = None
 
