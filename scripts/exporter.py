@@ -17,6 +17,8 @@ TYPE_STR = "str"
 TYPE_INT = "int"
 TYPE_OBJ = "object"
 
+BLACK_COMPONENT_TYPE_LIST = ["state"]
+
 
 def json_serializable(obj):
     result = {}
@@ -92,11 +94,7 @@ def export_data(*args):
         if item_name == "radio":
             if isinstance(item.choices, list) and item.type == 'index':
                 if isinstance(value, int):
-                    print('>>> radio: old >>>')
-                    print(value)
                     value = item.choices[value]
-                    print('>>> radio: new >>>')
-                    print(value)
 
         field_type = TYPE_STR
         object_type = str(type(value))
@@ -113,17 +111,13 @@ def export_data(*args):
             try:
                 value = compress_base64(pickle.dumps(value))
             except:
-                print("ERROR---value:")
-                print(value)
-                print("ERROR---item_name:")
-                print(str(item_name))
-                value = "H4sIAJ6sCmUC/2tg8dMDAL+uOHkEAAAA"
+                pass
             field_type = TYPE_OBJ
 
         #result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name, "it": json_serializable(item)}
         result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name}
     json_str = json.dumps(result, indent=4)
-    filename = "export-ui-params.txt"
+    filename = "export-ui-params.json"
     with open(filename, "w") as file:
         file.write(json_str)
     return filename
@@ -156,7 +150,7 @@ def import_data(upload_file):
 def download_json():
     if exporterPlugin.is_ran:
         exporterPlugin.is_ran = False
-        return "export-exec-params.txt"
+        return "export-exec-params.json"
     else:
         gr.Warning("请生成图片后, 再导出运行参数")
 
@@ -202,7 +196,8 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
-        self.args_params[component._id] = component
+        if str(component) not in BLACK_COMPONENT_TYPE_LIST:
+            self.args_params[component._id] = component
 
 
     def postprocess(self, p, processed, *args):
@@ -268,8 +263,7 @@ class exporterPlugin(scripts.Script):
 
                         execParam['alwayson_scripts']['controlnet']['args'].append(controlnetParams)
                     except Exception as e:
-                        # 捕获所有异常
-                        print('捕获到异常:', e)
+                        print('Exception:', e)
 
             if scriptTitle == 'ADetailer' and scriptArgs[0] is True:
                 dict1 = scriptArgs[1]
@@ -279,7 +273,7 @@ class exporterPlugin(scripts.Script):
                 }
 
         json_str = json.dumps(execParam, indent=4)
-        filename = "export-exec-params.txt"
+        filename = "export-exec-params.json"
         with open(filename, "w") as file:
             file.write(json_str)
 
