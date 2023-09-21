@@ -90,8 +90,13 @@ def export_data(*args):
         if item_name == "dropdown" and isinstance(value, int):
             value = item.choices[value]
         if item_name == "radio":
-            if isinstance(item.choices, list) and len(item.choices) == 0:
-                value = None
+            if isinstance(item.choices, list) and item.type == 'index':
+                if isinstance(value, int):
+                    print('>>> radio: old >>>')
+                    print(value)
+                    value = item.choices[value]
+                    print('>>> radio: new >>>')
+                    print(value)
 
         field_type = TYPE_STR
         object_type = str(type(value))
