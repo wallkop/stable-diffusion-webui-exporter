@@ -279,5 +279,7 @@ class exporterPlugin(scripts.Script):
 
         exporterPlugin.is_ran = True
 
+        return p
+
 
 
