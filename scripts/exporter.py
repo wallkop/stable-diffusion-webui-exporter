@@ -205,6 +205,7 @@ class exporterPlugin(scripts.Script):
 
 
     def before_process(self, p, *args):
+        # set tempfile to None
         index = 0
         for v in p.__dict__["script_args"]:
             if isinstance(v, tempfile._TemporaryFileWrapper):
@@ -216,7 +217,7 @@ class exporterPlugin(scripts.Script):
     def postprocess(self, p, processed, *args):
 
         if len(processed.info) == 0:
-            return p
+            return
 
         allProcessKeys = p.__dict__.keys()
         execParam = {
