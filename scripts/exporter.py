@@ -209,7 +209,9 @@ class exporterPlugin(scripts.Script):
         index = 0
         for v in p.__dict__["script_args"]:
             if isinstance(v, tempfile._TemporaryFileWrapper):
-                p.__dict__["script_args"][index] = None
+                tmp_list = list(p.__dict__["script_args"])
+                tmp_list[index] = None
+                p.__dict__["script_args"] = tuple(tmp_list)
                 print(">>> Set p.__dict__[\"script_args\"][%s] = None" % index)
             index += 1
 
