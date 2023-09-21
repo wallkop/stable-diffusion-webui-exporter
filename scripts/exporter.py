@@ -161,6 +161,8 @@ class exporterPlugin(scripts.Script):
 
     exec_params = ""
 
+    download_file_obj = None
+
     is_ran = False
 
     def __init__(self) -> None:
@@ -186,6 +188,7 @@ class exporterPlugin(scripts.Script):
                         export_button = gr.Button(value="导出UI参数")
                         download_button = gr.Button(value="导出运行参数", variant='primary')
                     download_file = gr.outputs.File(label="参数下载")
+                    self.download_file_obj = download_file
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
@@ -199,6 +202,10 @@ class exporterPlugin(scripts.Script):
         if str(component) not in BLACK_COMPONENT_TYPE_LIST:
             self.args_params[component._id] = component
 
+
+    def before_process(self, p, *args):
+        if self.download_file_obj is not None:
+            self.download_file_obj.value = None
 
     def postprocess(self, p, processed, *args):
 
