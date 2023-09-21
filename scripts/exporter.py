@@ -196,8 +196,9 @@ class exporterPlugin(scripts.Script):
 
 
     def after_component(self, component, **kwargs):
-        if str(component) not in BLACK_COMPONENT_TYPE_LIST:
-            self.args_params[component._id] = component
+        # if str(component) not in BLACK_COMPONENT_TYPE_LIST:
+        #     self.args_params[component._id] = component
+        pass
 
 
     def postprocess(self, p, processed, *args):
