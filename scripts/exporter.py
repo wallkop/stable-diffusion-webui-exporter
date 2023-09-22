@@ -71,7 +71,6 @@ def image_dict_to_base64(img_array):
     return result
 
 
-
 def base64_to_image_dict(base64_str):
     result = api.decode_base64_to_image(base64_str)
     result = np.array(result)
@@ -312,6 +311,3 @@ class exporterPlugin(scripts.Script):
         exporterPlugin.is_ran = True
 
         return p
-
-
-
