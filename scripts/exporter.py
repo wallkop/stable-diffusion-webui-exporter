@@ -199,7 +199,6 @@ class exporterPlugin(scripts.Script):
                 with gr.Blocks():
                     gr.Markdown(
 """
-### WebUI-参数管理插件使用说明
 
 #### 一.导出运行参数
 ```angular2html
