@@ -199,17 +199,19 @@ class exporterPlugin(scripts.Script):
                 with gr.Column():
                     with gr.Row():
                         upload_button = gr.UploadButton("上传UI参数")
-                        refresh_button = gr.Button(value="上传后刷新", variant='primary')
+                        refresh_button = gr.Button(value="确认上传", variant='primary')
+                    with gr.Row():
                         export_button = gr.Button(value="导出UI参数")
                         download_button = gr.Button(value="导出运行参数", variant='primary')
-                    download_file = gr.outputs.File(label="参数下载")
+                    with gr.Row():
+                        download_file = gr.outputs.File(label="参数下载")
                     self.download_file_obj = download_file
 
         with contextlib.suppress(AttributeError):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
             download_button.click(fn=download_json, inputs=[], outputs=download_file)
-            refresh_button.click(fn=refresh_data, input=[], outputs=args_list)
+            refresh_button.click(fn=refresh_data, inputs=[], outputs=args_list)
 
         return [download_file, export_button, upload_button, download_button]
 
