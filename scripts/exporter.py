@@ -124,10 +124,7 @@ def export_data(*args):
     return filename
 
 
-def import_data(upload_file):
-    file_path = upload_file.name
-    with open(file_path, "r") as file:
-        content = file.read()
+def reset_params(content):
     json_data = json.loads(content)
     result = []
     for key in sorted(json_data.keys(), key=int):
@@ -144,7 +141,24 @@ def import_data(upload_file):
             bv = decompress_base64(v)
             v = pickle.loads(bv)
         result.append(v)
+    return result
 
+
+def import_data(upload_file):
+    file_path = upload_file.name
+    with open(file_path, "r") as file:
+        content = file.read()
+    filename = "import-ui-params.json"
+    with open(filename, "w") as file:
+        file.write(content)
+    result = reset_params(content)
+    return result
+
+
+def refresh_data():
+    with open("import-ui-params.json", "r") as file:
+        content = file.read()
+    result = reset_params(content)
     return result
 
 
@@ -186,6 +200,7 @@ class exporterPlugin(scripts.Script):
                 with gr.Column():
                     with gr.Row():
                         upload_button = gr.UploadButton("上传UI参数")
+                        refresh_button = gr.Button(value="上传后刷新", variant='primary')
                         export_button = gr.Button(value="导出UI参数")
                         download_button = gr.Button(value="导出运行参数", variant='primary')
                     download_file = gr.outputs.File(label="参数下载")
@@ -195,6 +210,7 @@ class exporterPlugin(scripts.Script):
             export_button.click(fn=export_data, inputs=args_list, outputs=download_file)
             upload_button.upload(fn=import_data, inputs=upload_button, outputs=args_list)
             download_button.click(fn=download_json, inputs=[], outputs=download_file)
+            refresh_button.click(fn=refresh_data, input=[], outputs=args_list)
 
         return [download_file, export_button, upload_button, download_button]
 
