@@ -198,11 +198,11 @@ class exporterPlugin(scripts.Script):
             with gr.Accordion("[作业帮] 参数管理工具", open=False):
                 with gr.Column():
                     with gr.Row():
-                        upload_button = gr.UploadButton("上传UI参数")
-                        refresh_button = gr.Button(value="确认上传", variant='primary')
+                        upload_button = gr.UploadButton("上传-UI参数文件")
+                        refresh_button = gr.Button(value="确认上传(传完一定要点这)")
                     with gr.Row():
-                        export_button = gr.Button(value="导出UI参数")
-                        download_button = gr.Button(value="导出运行参数", variant='primary')
+                        export_button = gr.Button(value="导出-UI参数文件")
+                        download_button = gr.Button(value="导出-运行参数JSON", variant='primary')
                     with gr.Row():
                         download_file = gr.outputs.File(label="参数下载")
                     self.download_file_obj = download_file
