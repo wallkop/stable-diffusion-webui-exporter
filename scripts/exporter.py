@@ -195,20 +195,19 @@ class exporterPlugin(scripts.Script):
             args_list.append(ele)
 
         with gr.Group():
-            with gr.Accordion("[作业帮] 参数管理工具", open=False):
+            with gr.Accordion("WebUI-参数管理插件", open=False):
                 with gr.Blocks():
                     gr.Markdown(
 """
-### Zyb-Exporter插件使用说明
+### WebUI-参数管理插件使用说明
 
 #### 一.导出运行参数
 ```angular2html
-该功能主要是为了快速导出JSON提交到相机后台批量训练。
+该功能主要是为了快速导出JSON提交到SD后台批量训练。
 
 1.需要先进行一次图片生成, 否则无法导出。
 2.点击 [导出-运行参数JSON] 按钮后, 即生成本次运行的JSON。
 3.点击下方 [参数下载] 文件区域生成的链接即可下载。
-4.将该JSON文件上传到 [柠咖相机管理后台] 即可批量执行。
 ```
 
 #### 二.导出/上传UI参数
@@ -229,10 +228,10 @@ class exporterPlugin(scripts.Script):
                     with gr.Column():
                         with gr.Row():
                             upload_button = gr.UploadButton("上传-UI参数文件")
-                            refresh_button = gr.Button(value="确认上传(传完一定要点这)")
+                            refresh_button = gr.Button(value="确认上传(传完一定要点这)", variant='primary')
                         with gr.Row():
                             export_button = gr.Button(value="导出-UI参数文件")
-                            download_button = gr.Button(value="导出-运行参数JSON", variant='primary')
+                            download_button = gr.Button(value="导出-运行参数JSON", variant='stop')
                         with gr.Row():
                             download_file = gr.outputs.File(label="参数下载")
                         self.download_file_obj = download_file
