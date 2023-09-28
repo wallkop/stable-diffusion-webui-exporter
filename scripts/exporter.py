@@ -11,6 +11,8 @@ import gzip
 import math
 import numpy as np
 import tempfile
+import traceback
+
 
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
@@ -19,6 +21,41 @@ TYPE_INT = "int"
 TYPE_OBJ = "object"
 
 BLACK_COMPONENT_TYPE_LIST = ["state"]
+
+ADETAILER_ARGS = [
+    "ad_enable",
+    "ad_model",
+    "ad_prompt",
+    "ad_negative_prompt",
+    "ad_confidence",
+    "ad_mask_min_ratio",
+    "ad_mask_max_ratio",
+    "ad_x_offset",
+    "ad_y_offset",
+    "ad_dilate_erode",
+    "ad_mask_merge_invert",
+    "ad_mask_blur",
+    "ad_denoising_strength",
+    "ad_inpaint_only_masked",
+    "ad_inpaint_only_masked_padding",
+    "ad_use_inpaint_width_height",
+    "ad_inpaint_width",
+    "ad_inpaint_height",
+    "ad_use_steps",
+    "ad_steps",
+    "ad_use_cfg_scale",
+    "ad_cfg_scale",
+    "ad_use_sampler",
+    "ad_sampler",
+    "ad_use_noise_multiplier",
+    "ad_noise_multiplier",
+    "ad_restore_face",
+    "ad_controlnet_model",
+    "ad_controlnet_module",
+    "ad_controlnet_weight",
+    "ad_controlnet_guidance_start",
+    "ad_controlnet_guidance_end",
+]
 
 
 def json_serializable(obj):
@@ -40,7 +77,6 @@ def compress_base64(data):
     compressed_data = buffer.getvalue()
     compressed_base64 = base64.b64encode(compressed_data).decode('utf-8')
     return compressed_base64
-
 
 
 def decompress_base64(compressed_base64):
@@ -114,7 +150,6 @@ def export_data(*args):
                 pass
             field_type = TYPE_OBJ
 
-        #result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name, "it": json_serializable(item)}
         result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name}
     json_str = json.dumps(result, indent=4)
     filename = "export-ui-params.json"
@@ -195,7 +230,7 @@ class exporterPlugin(scripts.Script):
             args_list.append(ele)
 
         with gr.Group():
-            with gr.Accordion("WebUI-参数管理插件", open=False):
+            with gr.Accordion("Zyb-Exporter(参数管理插件) v1.0.0", open=False):
                 with gr.Blocks():
                     gr.Markdown(
 """
@@ -209,32 +244,38 @@ class exporterPlugin(scripts.Script):
 3.点击下方 [参数下载] 文件区域生成的链接即可下载。
 ```
 
-#### 二.导出/上传UI参数
+#### 二.存档/读档界面参数
 ```angular2html
-该功能主要是为了保存记录当前WebUI的参数, 并在以后进行导入还原。
+该功能主要是为了存档记录当前WebUI的参数, 并在以后进行读档还原。
 
-【如何导出】
-1.点击 [导出-UI参数文件] 按钮, 即生成当前WebUI界面的参数。
+【如何存档】
+1.点击 [存档-界面参数] 按钮, 即生成当前WebUI界面的参数。
 2.点击下方 [参数下载] 文件区域生成的链接即可下载。
 
-【如何上传】
-1.点击 [上传-UI参数文件] 按钮, 弹出文件框后选择对应的参数文件。
-2.点击 [确认上传] 按钮, 让导入的文件参数生效。
+【如何读档】
+1.点击 [读档-界面参数] 按钮, 弹出文件框后选择对应的参数文件。
+2.点击 [开始读档] 按钮, 让导入的文件参数生效。
 
 【注意事项】
-1.在当前机器导出的文件，也只能在当前机器上传，否则可能因为插件差异导致上传失败
-2.如果当前webui变更了插件(包括新增、更新)，则会导致之前导出的文件无法再上传
+1.在当前机器存档的文件，也只能在当前机器读档，否则可能因为插件差异导致读档失败
+2.如果当前webui变更了插件(包括新增、更新)，则会导致之前保存的文件无法再读档
 ```
+
+#### 三.目前兼容的插件
+* adetailer
+* sd-webui-additional-networks
+* sd-webui-controlnet
+* sd-webui-openpose-editor
 
 """
                     )
                     with gr.Column():
                         with gr.Row():
-                            upload_button = gr.UploadButton("上传-UI参数文件")
-                            refresh_button = gr.Button(value="确认上传(传完一定要点这)", variant='primary')
+                            export_button = gr.Button(value="存档-界面参数")
+                            upload_button = gr.UploadButton("读档-界面参数")
+                            refresh_button = gr.Button(value=">> 开始读档 >>", variant='primary')
                         with gr.Row():
-                            export_button = gr.Button(value="导出-UI参数文件")
-                            download_button = gr.Button(value="导出-运行参数JSON", variant='stop')
+                            download_button = gr.Button(value="导出-运行JSON", variant='stop')
                         with gr.Row():
                             download_file = gr.outputs.File(label="参数下载")
                         self.download_file_obj = download_file
@@ -261,7 +302,7 @@ class exporterPlugin(scripts.Script):
                 tmp_list = list(p.__dict__["script_args"])
                 tmp_list[index] = None
                 p.__dict__["script_args"] = tuple(tmp_list)
-                print(">>> Set p.__dict__[\"script_args\"][%s] = None" % index)
+                print("Check Type is _TemporaryFileWrapper, Set p.__dict__[\"script_args\"][%s] = None" % index)
             index += 1
 
 
@@ -270,78 +311,81 @@ class exporterPlugin(scripts.Script):
         if len(processed.info) == 0:
             return
 
-        allProcessKeys = p.__dict__.keys()
-        execParam = {
+        all_process_keys = p.__dict__.keys()
+        exec_param = {
             "script_args": [""],
             "alwayson_scripts": {},
         }
-        for key in allProcessKeys:
+
+        for key in all_process_keys:
             value = p.__dict__[key]
             if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(value, str):
-                execParam[key] = value
+                exec_param[key] = value
             elif key == 'init_images':
-                # init_images = []
-                # for image in value:
-                #     init_images.append(api.encode_pil_to_base64(image).decode('utf-8'))
-                execParam[key] = ["{{PPP}}"]
+                exec_param[key] = ["{{PPP}}"]
 
         for script in p.scripts.scripts:
-            scriptTitle = script.title()
-            scriptArgs = p.script_args[script.args_from : script.args_to]
-            if scriptTitle == 'ControlNet':
-                execParam['alwayson_scripts']['controlnet'] = {
+            script_title = script.title()
+            script_args = p.script_args[script.args_from : script.args_to]
+
+            if script_title == 'ControlNet':
+                exec_param['alwayson_scripts']['controlnet'] = {
                     "args": []
                 }
-                for scriptArg in scriptArgs:
+                for script_arg in script_args:
                     try:
-                        if not scriptArg.__dict__['enabled']:
+                        if not script_arg.__dict__['enabled']:
                             continue
-                        controlnetParams = {
-                            # "mask": None,
-                            # "module": scriptArg.module,
-                            # "model": scriptArg.model,
-                            # "weight": scriptArg.weight,
-                            # "resize_mode": scriptArg.resize_mode,
-                            # "control_mode": scriptArg.control_mode,
-                            # "pixel_perfect": scriptArg.pixel_perfect,
-                            # "guidance_start": scriptArg.guidance_start,
-                            # "guidance_end": scriptArg.guidance_end,
-                            # "threshold_a": scriptArg.threshold_a,
-                            # "threshold_b": scriptArg.threshold_b,
-                            # "processor_res": scriptArg.processor_res,
-                            # "lowvram": scriptArg.low_vram,  # 有疑问
-                        }
+                        controlnet_params = {}
+                        all_controlnet_keys = script_arg.__dict__.keys()
 
-                        allControlnetKeys = scriptArg.__dict__.keys()
-                        for key in allControlnetKeys:
-                            value = scriptArg.__dict__[key]
+                        for key in all_controlnet_keys:
+                            value = script_arg.__dict__[key]
                             if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(
                                     value, str):
-                                controlnetParams[key] = value
-                        if scriptArg.image:
-                            controlnetParams['mask'] = None
-                            if 'image' in scriptArg.image:
-                                pil = Image.fromarray(scriptArg.image['image'])
-                                controlnetParams['input_image'] = api.encode_pil_to_base64(pil).decode('utf-8')
-                            else:
-                                controlnetParams['input_image'] = None
+                                controlnet_params[key] = value
+                        if script_arg.image is not None:
+                            controlnet_params['input_image'] = None
+                            controlnet_params['mask'] = None
 
-                        execParam['alwayson_scripts']['controlnet']['args'].append(controlnetParams)
-                    except Exception as e:
-                        print('Exception:', e)
+                            if isinstance(script_arg.image, dict):
+                                if 'image' in script_arg.image:
+                                    pil = Image.fromarray(script_arg.image['image'])
+                                    controlnet_params['input_image'] = api.encode_pil_to_base64(pil).decode('utf-8')
+                                if 'mask' in script_arg.image:
+                                    pil = Image.fromarray(script_arg.image['mask'])
+                                    controlnet_params['mask'] = api.encode_pil_to_base64(pil).decode('utf-8')
 
-            if scriptTitle == 'ADetailer' and scriptArgs[0] is True:
-                dict1 = scriptArgs[1]
-                dict1.pop('is_api')
-                execParam['alwayson_scripts']['adetailer'] = {
-                    "args": [scriptArgs[0], dict1]
+                            if isinstance(script_arg.image, np.ndarray):
+                                pil = Image.fromarray(script_arg.image)
+                                controlnet_params['input_image'] = api.encode_pil_to_base64(pil).decode('utf-8')
+
+                        exec_param['alwayson_scripts']['controlnet']['args'].append(controlnet_params)
+                    except Exception:
+                        exception_str = traceback.format_exc()
+                        print(exception_str)
+
+            if script_title == 'ADetailer' and script_args[0] is True:
+                ad_args_dict = script_args[1]
+                # pop high level params
+                pop_key = []
+                for key in ad_args_dict.keys():
+                    if key not in ADETAILER_ARGS:
+                        pop_key.append(key)
+                for key in pop_key:
+                    ad_args_dict.pop(key)
+                exec_param['alwayson_scripts']['adetailer'] = {
+                    "args": [script_args[0], ad_args_dict]
                 }
 
-        json_str = json.dumps(execParam, indent=4)
+            if script_title == 'Additional networks for generating':
+                exec_param['alwayson_scripts']['Additional networks for generating'] = {
+                    "args": list(script_args)
+                }
+
+        json_str = json.dumps(exec_param, indent=4)
         filename = "export-exec-params.json"
         with open(filename, "w") as file:
             file.write(json_str)
 
         exporterPlugin.is_ran = True
-
-        return p
