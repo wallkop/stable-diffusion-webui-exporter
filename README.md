@@ -29,3 +29,12 @@
 * sd-webui-additional-networks
 * sd-webui-controlnet
 * sd-webui-openpose-editor
+
+#### 四.插件更新日志
+* 2023/09/28 `v1.0.0` 第一版插件发布
+* 2023/10/10 `v1.0.1` 1.修复了图生图读档失败bug: 当先在文生图中生成一张图片, 再去图生图存档后, 生成的json无法读档 2.修复了图生图的初始图被替换成{{PPP}}标签的问题
+* 2023/10/20 `v1.0.2` 修复了不支持导出adetailer中2nd参数的问题
+* 2023/10/25 `v1.0.3` 支持导出参数在车间动态切换checkpoint(底模)
+
+#### 五.Bug反馈
+* 钉钉联系 `wusilei` 老师

@@ -13,6 +13,10 @@ import numpy as np
 import tempfile
 import traceback
 
+VERSION = "v1.0.4"
+FILE_SD_RUN = "sd_run.json"
+FILE_SD_SAVE = "sd_export.save"
+FILE_SD_SAVE_IMPORT_TMP = "tmp_import-ui-params.save"
 
 TYPE_IMAGE = "Image"
 TYPE_IMAGE_DICT = "ImageDict"
@@ -145,14 +149,19 @@ def export_data(*args):
             object_type = TYPE_INT
         elif "<class 'str'>" != object_type:
             try:
+                if isinstance(value, tempfile._TemporaryFileWrapper):
+                    value = None
                 value = compress_base64(pickle.dumps(value))
             except:
-                pass
+                value = None
             field_type = TYPE_OBJ
 
+
         result[key] = {"v": value, "t": field_type, "o": object_type, "name": item_name}
+
+
     json_str = json.dumps(result, indent=4)
-    filename = "export-ui-params.json"
+    filename = FILE_SD_SAVE
     with open(filename, "w") as file:
         file.write(json_str)
     return filename
@@ -165,6 +174,8 @@ def reset_params(content):
         value = json_data[key]
         v = value["v"]
         t = value["t"]
+        o = value["o"]
+        name = value["name"]
         if t == TYPE_IMAGE:
             v = base64_to_image(v)
         elif t == TYPE_IMAGE_DICT:
@@ -174,6 +185,11 @@ def reset_params(content):
         elif t == TYPE_OBJ:
             bv = decompress_base64(v)
             v = pickle.loads(bv)
+
+            # 特殊处理gallery, 识别出来的话就置空
+            if o == "<class 'list'>" and name == "gallery":
+                v = []
+
         result.append(v)
     return result
 
@@ -182,7 +198,7 @@ def import_data(upload_file):
     file_path = upload_file.name
     with open(file_path, "r") as file:
         content = file.read()
-    filename = "import-ui-params.json"
+    filename = FILE_SD_SAVE_IMPORT_TMP
     with open(filename, "w") as file:
         file.write(content)
     result = reset_params(content)
@@ -190,7 +206,7 @@ def import_data(upload_file):
 
 
 def refresh_data():
-    with open("import-ui-params.json", "r") as file:
+    with open(FILE_SD_SAVE_IMPORT_TMP, "r") as file:
         content = file.read()
     result = reset_params(content)
     return result
@@ -199,9 +215,19 @@ def refresh_data():
 def download_json():
     if exporterPlugin.is_ran:
         exporterPlugin.is_ran = False
-        return "export-exec-params.json"
+        return FILE_SD_RUN
     else:
         gr.Warning("请生成图片后, 再导出运行参数")
+
+
+def get_model_name(info):
+    block = info.split(",")
+    for item in block:
+        item = item.strip()
+        if item.startswith("Model:", ):
+            split = item.split(":")
+            return split[1].strip()
+    return None
 
 
 class exporterPlugin(scripts.Script):
@@ -230,7 +256,7 @@ class exporterPlugin(scripts.Script):
             args_list.append(ele)
 
         with gr.Group():
-            with gr.Accordion("Zyb-Exporter(参数管理插件) v1.0.0", open=False):
+            with gr.Accordion("Zyb-Exporter(参数管理插件) %s" % VERSION, open=False):
                 with gr.Blocks():
                     gr.Markdown(
 """
@@ -266,6 +292,17 @@ class exporterPlugin(scripts.Script):
 * sd-webui-additional-networks
 * sd-webui-controlnet
 * sd-webui-openpose-editor
+
+#### 四.插件更新日志
+* 2023/09/28 `v1.0.0` 第一版插件发布
+* 2023/10/10 `v1.0.1` 1.修复了图生图读档失败bug: 当先在文生图中生成一张图片, 再去图生图存档后, 生成的json无法读档 2.修复了图生图的初始图被替换成{{PPP}}标签的问题
+* 2023/10/20 `v1.0.2` 修复了不支持导出adetailer中2nd参数的问题
+* 2023/10/25 `v1.0.3` 支持导出参数在车间动态切换checkpoint(底模)
+* 2023/10/26 `v1.0.4` 修复了存档的数据包含`_TemporaryFileWrapper`导致报错的问题
+* 2023/11/02 `v1.0.5` 支持图生图导出
+
+#### 五.Bug反馈
+* 钉钉联系 `wusilei` 老师
 
 """
                     )
@@ -311,10 +348,16 @@ class exporterPlugin(scripts.Script):
         if len(processed.info) == 0:
             return
 
+        model_name = get_model_name(processed.info)
+
         all_process_keys = p.__dict__.keys()
         exec_param = {
             "script_args": [""],
             "alwayson_scripts": {},
+            # set model
+            "override_settings": {
+                "sd_model_checkpoint": model_name
+            }
         }
 
         for key in all_process_keys:
@@ -322,7 +365,13 @@ class exporterPlugin(scripts.Script):
             if (isinstance(value, (int, float, bool, complex)) and not math.isinf(value)) or isinstance(value, str):
                 exec_param[key] = value
             elif key == 'init_images':
-                exec_param[key] = ["{{PPP}}"]
+                init_images = []
+                for image in value:
+                    init_images.append(api.encode_pil_to_base64(image).decode('utf-8'))
+                exec_param[key] = init_images
+            elif key in ('image_mask', 'mask_for_overlay') and value is not None:
+                exec_param[key] = api.encode_pil_to_base64(value).decode('utf-8')
+
 
         for script in p.scripts.scripts:
             script_title = script.title()
@@ -366,17 +415,23 @@ class exporterPlugin(scripts.Script):
                         print(exception_str)
 
             if script_title == 'ADetailer' and script_args[0] is True:
-                ad_args_dict = script_args[1]
-                # pop high level params
-                pop_key = []
-                for key in ad_args_dict.keys():
-                    if key not in ADETAILER_ARGS:
-                        pop_key.append(key)
-                for key in pop_key:
-                    ad_args_dict.pop(key)
                 exec_param['alwayson_scripts']['adetailer'] = {
-                    "args": [script_args[0], ad_args_dict]
+                    "args": [script_args[0]]
                 }
+                ad_args_list = script_args[1:3]
+                for ad_args_dict in ad_args_list:
+                    if "ad_model" not in ad_args_dict:
+                        continue
+                    if ad_args_dict["ad_model"] == "None":
+                        continue
+                    # pop high level params
+                    pop_key = []
+                    for key in ad_args_dict.keys():
+                        if key not in ADETAILER_ARGS:
+                            pop_key.append(key)
+                    for key in pop_key:
+                        ad_args_dict.pop(key)
+                    exec_param['alwayson_scripts']['adetailer']['args'].append(ad_args_dict)
 
             if script_title == 'Additional networks for generating':
                 exec_param['alwayson_scripts']['Additional networks for generating'] = {
@@ -384,7 +439,7 @@ class exporterPlugin(scripts.Script):
                 }
 
         json_str = json.dumps(exec_param, indent=4)
-        filename = "export-exec-params.json"
+        filename = FILE_SD_RUN
         with open(filename, "w") as file:
             file.write(json_str)
 
